@@ -5,7 +5,7 @@
  * Description: GraphQL API for WordPress
  * Author: WPGraphQL
  * Author URI: http://www.wpgraphql.com
- * Version: 0.4.2
+ * Version: 0.4.3
  * Text Domain: wp-graphql
  * Domain Path: /languages/
  * Requires at least: 4.7.0
@@ -17,7 +17,7 @@
  * @package  WPGraphQL
  * @category Core
  * @author   WPGraphQL
- * @version  0.4.2
+ * @version  0.4.3
  */
 
 // Exit if accessed directly.
@@ -172,7 +172,7 @@ if ( ! class_exists( 'WPGraphQL' ) ) :
 
 			// Plugin version.
 			if ( ! defined( 'WPGRAPHQL_VERSION' ) ) {
-				define( 'WPGRAPHQL_VERSION', '0.4.2' );
+				define( 'WPGRAPHQL_VERSION', '0.4.3' );
 			}
 
 			// Plugin Folder Path.
@@ -434,7 +434,7 @@ if ( ! class_exists( 'WPGraphQL' ) ) :
 					if ( empty( $post_type_object->graphql_single_name ) || empty( $post_type_object->graphql_plural_name ) ) {
 						throw new \GraphQL\Error\UserError(
 							sprintf(
-								/* translators: %s will replaced with the registered type */
+							/* translators: %s will replaced with the registered type */
 								__( 'The %s post_type isn\'t configured properly to show in GraphQL. It needs a "graphql_single_name" and a "graphql_plural_name"', 'wp-graphql' ),
 								$post_type_object->name
 							)
@@ -488,7 +488,7 @@ if ( ! class_exists( 'WPGraphQL' ) ) :
 					if ( empty( $tax_object->graphql_single_name ) || empty( $tax_object->graphql_plural_name ) ) {
 						throw new \GraphQL\Error\UserError(
 							sprintf(
-								/* translators: %s will replaced with the registered taxonomty */
+							/* translators: %s will replaced with the registered taxonomty */
 								__( 'The %s taxonomy isn\'t configured properly to show in GraphQL. It needs a "graphql_single_name" and a "graphql_plural_name"', 'wp-graphql' ),
 								$tax_object->name
 							)
