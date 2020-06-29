@@ -21,7 +21,6 @@ class Request {
 	 * App context for this request.
 	 *
 	 * @var \WPGraphQL\AppContext
-	 * @access private
 	 */
 	private $app_context;
 
@@ -29,7 +28,6 @@ class Request {
 	 * Request data.
 	 *
 	 * @var array
-	 * @access private
 	 */
 	private $data;
 
@@ -37,7 +35,6 @@ class Request {
 	 * Cached global post.
 	 *
 	 * @var \WP_Post
-	 * @access private
 	 */
 	private $global_post;
 
@@ -46,7 +43,6 @@ class Request {
 	 * OperationParams.
 	 *
 	 * @var OperationParams|OperationParams[]
-	 * @access private
 	 */
 	private $params;
 
@@ -54,7 +50,6 @@ class Request {
 	 * Schema for this request.
 	 *
 	 * @var \WPGraphQL\WPSchema
-	 * @access public
 	 */
 	public $schema;
 
@@ -64,8 +59,6 @@ class Request {
 	 * @param  array|null $data The request data (for non-HTTP requests).
 	 *
 	 * @return void
-	 *
-	 * @access public
 	 *
 	 * @throws \Exception
 	 */
@@ -112,8 +105,6 @@ class Request {
 	/**
 	 * Apply filters and do actions before GraphQL execution
 	 *
-	 * @access private
-	 *
 	 * @return void
 	 */
 	private function before_execute() {
@@ -121,7 +112,7 @@ class Request {
 		/**
 		 * Filter "is_graphql_request" to return true
 		 */
-		\WPGraphQL::__set_is_graphql_request( true );
+		\WPGraphQL::set_is_graphql_request( true );
 
 		/**
 		 * Store the global post so it can be reset after GraphQL execution
@@ -153,12 +144,21 @@ class Request {
 	 * Anything else (true, WP_Error, thrown exception, etc) will prevent execution of the GraphQL
 	 * request.
 	 *
-	 * @access protected
 	 * @throws \Exception
 	 *
 	 * @return boolean
 	 */
 	protected function has_authentication_errors() {
+
+		/**
+		 * Bail if this is not an HTTP request.
+		 *
+		 * Auth for internal requests will happen
+		 * via WordPress internals.
+		 */
+		if ( ! is_graphql_http_request() ) {
+			return false;
+		}
 
 		/**
 		 * Access the global $wp_rest_auth_cookie
@@ -223,7 +223,6 @@ class Request {
 	 *
 	 * @param boolean $authentication_errors Whether there are authentication errors with the request
 	 *
-	 * @access protected
 	 * @return boolean
 	 */
 	protected function filtered_authentication_errors( $authentication_errors = false ) {
@@ -244,7 +243,6 @@ class Request {
 	 * @param mixed|array|object $response The response from execution. Array for batch requests,
 	 *                                     single object for individual requests
 	 * @return array
-	 * @access private
 	 *
 	 * @throws \Exception
 	 */
@@ -296,8 +294,6 @@ class Request {
 	 *
 	 * @param array          $response The response for your GraphQL request
 	 * @param mixed|Int|null $key      The array key of the params for batch requests
-	 *
-	 *                                 @access private
 	 *
 	 * @return array
 	 */
@@ -371,7 +367,7 @@ class Request {
 		/**
 		 * Filter "is_graphql_request" back to false.
 		 */
-		\WPGraphQL::__set_is_graphql_request( false );
+		\WPGraphQL::set_is_graphql_request( false );
 
 		return $filtered_response;
 	}
@@ -380,8 +376,6 @@ class Request {
 	 * Run action for a request.
 	 *
 	 * @param  OperationParams $params OperationParams for the request.
-	 *
-	 *                                 @access private
 	 *
 	 * @return void
 	 */
@@ -400,7 +394,6 @@ class Request {
 	/**
 	 * Execute an internal request (graphql() function call).
 	 *
-	 * @access public
 	 * @return array
 	 * @throws \Exception
 	 */
@@ -446,7 +439,6 @@ class Request {
 	/**
 	 * Execute an HTTP request.
 	 *
-	 * @access public
 	 * @return array
 	 * @throws \Exception
 	 */
@@ -475,7 +467,6 @@ class Request {
 	/**
 	 * Get the operation params for the request.
 	 *
-	 * @access public
 	 * @return OperationParams
 	 */
 	public function get_params() {

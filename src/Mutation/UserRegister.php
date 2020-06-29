@@ -46,7 +46,7 @@ class UserRegister {
 		);
 
 		/**
-		 * make sure we don't allow input for role or roles
+		 * Make sure we don't allow input for role or roles
 		 */
 		unset( $input_fields['role'] );
 		unset( $input_fields['roles'] );
@@ -134,9 +134,19 @@ class UserRegister {
 			unset( $user_args['role'] );
 
 			/**
+			 * Prevent "Password Changed" emails from being sent.
+			 */
+			add_filter( 'send_password_change_email', [ __CLASS__, 'return_false' ] );
+
+			/**
 			 * Update the registered user with the additional input (firstName, lastName, etc) from the mutation
 			 */
 			wp_update_user( $user_args );
+
+			/**
+			 * Remove filter preventing "Password Changed" emails.
+			 */
+			remove_filter( 'send_password_change_email', [ __CLASS__, 'return_false' ] );
 
 			/**
 			 * Update additional user data
@@ -151,5 +161,12 @@ class UserRegister {
 			];
 
 		};
+	}
+
+	/**
+	 * @return bool False.
+	 */
+	public static function return_false() : bool {
+		return false;
 	}
 }

@@ -2,72 +2,49 @@
 
 namespace WPGraphQL\Type\Object;
 
+use WPGraphQL\AppContext;
 use WPGraphQL\Data\DataSource;
 use WPGraphQL\Model\Term;
 
+/**
+ * Class TermObject
+ *
+ * @package WPGraphQL\Type\Object
+ */
 class TermObject {
 
+	/**
+	 * Register the Type for each kind of Taxonomy
+	 *
+	 * @param $taxonomy_object
+	 */
 	public static function register_taxonomy_object_type( $taxonomy_object ) {
+
+		$interfaces = [ 'Node', 'TermNode', 'UniformResourceIdentifiable' ];
+
+		if ( $taxonomy_object->hierarchical ) {
+			$interfaces[] = 'HierarchicalTermNode';
+		}
 
 		$single_name = $taxonomy_object->graphql_single_name;
 		register_graphql_object_type(
 			$single_name,
 			[
-				'description' => __( sprintf( 'The %s type', $single_name ), 'wp-graphql' ),
-				'interfaces'  => [ 'Node' ],
+				'description' => sprintf( __( 'The %s type', 'wp-graphql' ), $single_name ),
+				'interfaces'  => $interfaces,
 				'fields'      => [
-					'id'                => [
-						'description' => sprintf(
-							/* translators: %s: taxonomy name */
-							__( 'The globally unique identifier for the %s term object.', 'wp-graphql' ),
-							$taxonomy_object->name
-						),
-					],
 					$single_name . 'Id' => [
-						'type'        => 'Int',
-						'description' => __( 'The id field matches the WP_Post->ID field.', 'wp-graphql' ),
-						'resolve'     => function( Term $term, $args, $context, $node ) {
+						'type'              => 'Int',
+						'deprecationReason' => __( 'Deprecated in favor of databaseId', 'wp-graphql' ),
+						'description'       => __( 'The id field matches the WP_Post->ID field.', 'wp-graphql' ),
+						'resolve'           => function( Term $term, $args, $context, $info ) {
 							return absint( $term->term_id );
 						},
 					],
-					'count'             => [
-						'type'        => 'Int',
-						'description' => __( 'The number of objects connected to the object', 'wp-graphql' ),
-					],
-					'description'       => [
-						'type'        => 'String',
-						'description' => __( 'The description of the object', 'wp-graphql' ),
-					],
-					'name'              => [
-						'type'        => 'String',
-						'description' => __( 'The human friendly name of the object.', 'wp-graphql' ),
-					],
-					'slug'              => [
-						'type'        => 'String',
-						'description' => __( 'An alphanumeric identifier for the object unique to its type.', 'wp-graphql' ),
-					],
-					'termGroupId'       => [
-						'type'        => 'Int',
-						'description' => __( 'The ID of the term group that this term object belongs to', 'wp-graphql' ),
-					],
-					'termTaxonomyId'    => [
-						'type'        => 'Int',
-						'description' => __( 'The taxonomy ID that the object is associated with', 'wp-graphql' ),
-					],
-					'taxonomy'          => [
-						'type'        => 'Taxonomy',
-						'description' => __( 'The name of the taxonomy this term belongs to', 'wp-graphql' ),
-						'resolve'     => function( $source, $args, $context, $info ) {
-							return DataSource::resolve_taxonomy( $source->taxonomyName );
+					'uri'               => [
+						'resolve' => function( $term, $args, $context, $info ) {
+							return ! empty( $term->link ) ? str_ireplace( home_url(), '', $term->link ) : '';
 						},
-					],
-					'isRestricted'      => [
-						'type'        => 'Boolean',
-						'description' => __( 'Whether the object is restricted from the current viewer', 'wp-graphql' ),
-					],
-					'link'              => [
-						'type'        => 'String',
-						'description' => __( 'The link to the term', 'wp-graphql' ),
 					],
 				],
 			]
@@ -80,8 +57,8 @@ class TermObject {
 				[
 					'type'        => $taxonomy_object->graphql_single_name,
 					'description' => __( 'The parent object', 'wp-graphql' ),
-					'resolve'     => function( Term $term, $args, $context, $info ) {
-						return isset( $term->parentId ) ? DataSource::resolve_term_object( $term->parentId, $context ) : null;
+					'resolve'     => function( Term $term, $args, AppContext $context, $info ) {
+						return isset( $term->parentDatabaseId ) ? $context->get_loader( 'term' )->load_deferred( $term->parentDatabaseId ) : null;
 					},
 				]
 			);
@@ -109,8 +86,6 @@ class TermObject {
 				]
 			);
 
-			// @todo
-			// $fields['children'] = TermObjectConnectionDefinition::connection( $taxonomy_object, 'Children' );
 		}
 
 	}

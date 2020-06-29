@@ -1,6 +1,7 @@
 <?php
 namespace WPGraphQL\Data\Connection;
 
+use GraphQLRelay\Relay;
 use GraphQL\Type\Definition\ResolveInfo;
 use WPGraphQL\AppContext;
 use WPGraphQL\Model\Menu;
@@ -25,6 +26,17 @@ class MenuItemConnectionResolver extends PostObjectConnectionResolver {
 	 */
 	public function __construct( $source, array $args, AppContext $context, ResolveInfo $info ) {
 		parent::__construct( $source, $args, $context, $info, 'nav_menu_item' );
+	}
+
+	/**
+	 * @param $id
+	 *
+	 * @return mixed|null|MenuItem|\WPGraphQL\Model\Post
+	 * @throws \Exception
+	 */
+	public function get_node_by_id( $id ) {
+		$post = get_post( $id );
+		return ! empty( $post ) ? new MenuItem( $post ) : null;
 	}
 
 	/**
@@ -75,7 +87,7 @@ class MenuItemConnectionResolver extends PostObjectConnectionResolver {
 			}
 		}
 
-		return array();
+		return [];
 	}
 
 	/**
@@ -127,16 +139,37 @@ class MenuItemConnectionResolver extends PostObjectConnectionResolver {
 			return $query_args;
 		}
 
-		// Filter the menu items on whether they match a parent ID, if we are
-		// inside a request for child items. If parent ID is 0, that corresponds to
-		// a top-level menu item.
-		$parent_id     = ( $source instanceof MenuItem && 'childItems' === $this->info->fieldName ) ? $source->menuItemId : 0;
-		$matched_items = array_filter(
-			$menu_items,
-			function ( $item ) use ( $parent_id ) {
-				return $parent_id === intval( $item->menu_item_parent );
+		/**
+		 * Parent menu item database id if any. 0 is a special value which
+		 * means root items without parent
+		 */
+		$parent_id = null;
+
+		if ( $source instanceof MenuItem && 'childItems' === $this->info->fieldName ) {
+			// In nested `childItems` field
+			$parent_id = $source->menuItemId;
+		} elseif ( isset( $args['where']['parentId'] ) ) {
+			$parent_id = $args['where']['parentId'];
+			// "0" is a special case in the relay ids
+			if ( '0' === $parent_id ) {
+				$parent_id = intval( $parent_id );
+			} else {
+				$parent_id = intval( Relay::fromGlobalId( $parent_id )['id'] );
 			}
-		);
+		} elseif ( isset( $args['where']['parentDatabaseId'] ) ) {
+			$parent_id = $args['where']['parentDatabaseId'];
+		}
+
+		$matched_items = $menu_items;
+
+		if ( null !== $parent_id ) {
+			$matched_items = array_filter(
+				$menu_items,
+				function ( $item ) use ( $parent_id ) {
+					return intval( $item->menu_item_parent ) === $parent_id;
+				}
+			);
+		}
 
 		// Get post IDs.
 		$matched_ids = wp_list_pluck( $matched_items, 'ID' );

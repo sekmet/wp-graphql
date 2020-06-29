@@ -7,7 +7,7 @@ class PostObjectCursorTest extends \Codeception\TestCase\WPTestCase {
 	public $created_post_ids;
 	public $admin;
 
-	public function setUp() {
+	public function setUp(): void {
 		parent::setUp();
 
 		$this->current_time     = strtotime( '- 1 day' );
@@ -19,7 +19,7 @@ class PostObjectCursorTest extends \Codeception\TestCase\WPTestCase {
 		$this->created_post_ids = $this->create_posts();
 	}
 
-	public function tearDown() {
+	public function tearDown(): void {
 		parent::tearDown();
 	}
 
@@ -165,7 +165,7 @@ class PostObjectCursorTest extends \Codeception\TestCase\WPTestCase {
 		}, $second['data']['posts']['edges']);
 
 		// Make correspondig WP_Query
-		WPGraphQL::__set_is_graphql_request( true );
+		WPGraphQL::set_is_graphql_request( true );
 		$first_page = new WP_Query( array_merge( $meta_fields, [
 			'post_status' => 'publish',
 			'post_type' => 'post',
@@ -182,7 +182,7 @@ class PostObjectCursorTest extends \Codeception\TestCase\WPTestCase {
 			'posts_per_page' => $posts_per_page,
 			'paged' => 2,
 		] ) );
-		WPGraphQL::__set_is_graphql_request( true );
+		WPGraphQL::set_is_graphql_request( true );
 
 
 		$first_page_expected = wp_list_pluck($first_page->posts, 'ID');

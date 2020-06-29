@@ -20,17 +20,15 @@ class CommentAuthor extends Model {
 	 * Stores the comment author to be modeled
 	 *
 	 * @var array $data
-	 * @access protected
 	 */
 	protected $data;
 
 	/**
 	 * CommentAuthor constructor.
 	 *
-	 * @param array $comment_author The incoming comment author array to be modeled
+	 * @param \WP_Comment $comment_author The incoming comment author array to be modeled
 	 *
 	 * @throws \Exception
-	 * @access public
 	 */
 	public function __construct( $comment_author ) {
 		$this->data = $comment_author;
@@ -40,7 +38,6 @@ class CommentAuthor extends Model {
 	/**
 	 * Initializes the object
 	 *
-	 * @access protected
 	 * @return void
 	 */
 	protected function init() {
@@ -49,16 +46,16 @@ class CommentAuthor extends Model {
 
 			$this->fields = [
 				'id'    => function() {
-					return ! empty( $this->data['comment_id'] ) ? Relay::toGlobalId( 'commentAuthor', $this->data['comment_id'] ) : null;
+					return ! empty( $this->data->comment_ID ) ? Relay::toGlobalId( 'comment_author', $this->data->comment_ID ) : null;
 				},
 				'name'  => function() {
-					return ! empty( $this->data['comment_author'] ) ? $this->data['comment_author'] : null;
+					return ! empty( $this->data->comment_author ) ? $this->data->comment_author : null;
 				},
 				'email' => function() {
-					return ! empty( $this->data['comment_author_email'] ) ? $this->data['comment_author_email'] : null;
+					return current_user_can( 'moderate_comments' ) && ! empty( $this->data->comment_author_email ) ? $this->data->comment_author_email : null;
 				},
 				'url'   => function() {
-					return ! empty( $this->data['comment_author_url'] ) ? $this->data['comment_author_url'] : '';
+					return ! empty( $this->data->comment_author_url ) ? $this->data->comment_author_url : '';
 				},
 			];
 

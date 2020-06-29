@@ -2,7 +2,16 @@
 
 namespace WPGraphQL\Type\Object;
 
+/**
+ * Class Theme
+ *
+ * @package WPGraphQL\Type\Object
+ */
 class Theme {
+
+	/**
+	 * Register the Theme Type
+	 */
 	public static function register_type() {
 		register_graphql_object_type(
 			'Theme',
@@ -48,7 +57,7 @@ class Theme {
 						'description' => __( 'URI for the author/company website. This field is equivalent to WP_Theme->get( "Tags" ).', 'wp-graphql' ),
 					],
 					'version'      => [
-						'type'        => 'Float',
+						'type'        => 'String',
 						'description' => __( 'The current version of the theme. This field is equivalent to WP_Theme->get( "Version" ).', 'wp-graphql' ),
 					],
 					'isRestricted' => [

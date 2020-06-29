@@ -21,7 +21,6 @@ class Menu extends Model {
 	 * Stores the incoming WP_Term object
 	 *
 	 * @var \WP_Term $data
-	 * @access protected
 	 */
 	protected $data;
 
@@ -30,7 +29,6 @@ class Menu extends Model {
 	 *
 	 * @param \WP_Term $term The incoming WP_Term object that needs modeling
 	 *
-	 * @access public
 	 * @return void
 	 * @throws \Exception
 	 */
@@ -42,7 +40,6 @@ class Menu extends Model {
 	/**
 	 * Initializes the Menu object
 	 *
-	 * @access protected
 	 * @return void
 	 */
 	protected function init() {
@@ -51,13 +48,13 @@ class Menu extends Model {
 
 			$this->fields = [
 				'id'     => function() {
-					return ! empty( $this->data->term_id ) ? Relay::toGlobalId( 'Menu', $this->data->term_id ) : null;
+					return ! empty( $this->data->term_id ) ? Relay::toGlobalId( 'nav_menu', $this->data->term_id ) : null;
 				},
 				'count'  => function() {
 					return ! empty( $this->data->count ) ? absint( $this->data->count ) : null;
 				},
 				'menuId' => function() {
-					return ! empty( $this->data->term_id ) ? $this->data->term_id : null;
+					return ! empty( $this->data->term_id ) ? absint( $this->data->term_id ) : null;
 				},
 				'name'   => function() {
 					return ! empty( $this->data->name ) ? $this->data->name : null;

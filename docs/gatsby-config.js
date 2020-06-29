@@ -4,12 +4,14 @@ module.exports = {
   siteMetadata: {
     siteName: `WPGraphQL`,
     title: `WPGraphQL Docs`,
+    subtitle: `WPGraphQL Docs`,
     description: `WPGraphQL (GraphQL for WordPress) documentation.`,
     twitterHandle: `wpgraphql`,
     author: `WPGraphQL`,
   },
+  pathPrefix: ``,
   plugins: [
-    `gatsby-plugin-sharp`,
+    // Data source Plugins
     {
       resolve: `gatsby-source-filesystem`,
       options: {
@@ -17,8 +19,12 @@ module.exports = {
         path: `${__dirname}/source/images`,
       },
     },
+    // transformer plugins
+    `gatsby-plugin-sharp`,
     `gatsby-transformer-sharp`,
     `gatsby-plugin-sharp`,
+
+    // meta tools
     {
       resolve: `gatsby-plugin-manifest`,
       options: {
@@ -37,6 +43,8 @@ module.exports = {
         style: false,
       },
     },
+
+    //Theme config
     {
       resolve: 'gatsby-theme-apollo-docs',
       options: {
@@ -48,12 +56,11 @@ module.exports = {
         subtitle: 'WPGraphQL',
         description: 'WPGraphQL (GraphQL for WordPress) documentation.',
         githubRepo: 'wp-graphql/wp-graphql',
-        defaultVersion: 0.4,
         trackingId: 'UA-111783024-1',
         twitterHandle: 'wpgraphql',
         spectrumHandle: 'wpgraphql',
-        algoliaApiKey: 'bbd3b8557e78cdf3e0a73b5520f7f7ba',
-        algoliaIndexName: 'wp_posts',
+        algoliaApiKey: 'fb8b4503ba2093d228a6c9b72facff9b',
+        algoliaIndexName: 'wpgraphql',
         youtubeUrl: 'https://www.youtube.com/channel/UCwav5UKLaEufn0mtvaFAkYw',
         logoLink: 'https://docs.wpgraphql.com',
         navConfig: {
@@ -133,11 +140,20 @@ module.exports = {
             'extensions/wpgraphiql',
             'extensions/wpgraphql-content-blocks',
             'extensions/wpgraphql-gutenberg',
+            'extensions/wp-graphql-seopress',
           ],
         },
       },
     },
+    //Hosting integration
     `gatsby-plugin-netlify`,
-    `gatsby-plugin-netlify-cache`,
+
+    //Testing plugins
+    {
+      resolve: `gatsby-plugin-react-axe`,
+      options: {
+        showInProduction: false,
+      },
+    },
   ],
 }

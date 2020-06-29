@@ -2,11 +2,21 @@
 
 namespace WPGraphQL\Type\Object;
 
+/**
+ * Class Plugin
+ *
+ * @package WPGraphQL\Type\Object
+ */
 class Plugin {
+
+	/**
+	 * Registers the Plugin Type to the Schema
+	 */
 	public static function register_type() {
 		register_graphql_object_type(
 			'Plugin',
 			[
+				'interfaces'  => [ 'Node' ],
 				'description' => __( 'An plugin object', 'wp-graphql' ),
 				'fields'      => [
 					'id'           => [
@@ -40,8 +50,11 @@ class Plugin {
 						'type'        => 'Boolean',
 						'description' => __( 'Whether the object is restricted from the current viewer', 'wp-graphql' ),
 					],
+					'path'         => [
+						'type'        => 'String',
+						'description' => __( 'Plugin path.', 'wp-graphql' ),
+					],
 				],
-				'interfaces'  => [ 'Node' ],
 			]
 		);
 	}

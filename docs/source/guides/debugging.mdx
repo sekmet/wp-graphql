@@ -32,12 +32,15 @@ Below are some situations you may come across and some tips on how to debug them
 
 ### Internal Server Error / Schema Won’t Load in GraphiQL
 
-Sometimes you make a change to your Schema and you begin to get Internal server error responses and
-even refreshing WPGraphiQL won’t load your Schema.
+If you see an error that says "Internal Server Error" in the GraphQL response, this means something
+occurred during execution that caused an error. Not all errors are intended for public viewing as they
+can expose sensitive details about the system. To expose the errors, you can (https://docs.wpgraphql.com/guides/debugging/#graphql-debug)[enable GRAPHQL_DEBUG]:
 
-This typically occurs when a Field or Type has been registered incorrectly.
+One common reason for seeing the `Internal Server Error` response is when a Field or Type has been
+registered incorrectly.
 
-For example, when registering a Field, a Type is required as part of the config.
+For example, when registering a Field, a Type is required as part of the config. If a Type is not
+declared when registering a Field, an `Internal Server Error` will be thrown.
 
 #### Invalid Field
 
@@ -79,7 +82,7 @@ resolvers are the slowest, which enables you to pinpoint bottlenecks.
 ## Resolver not executing properly
 
 If you’re experiencing a field resolving differently then expected, one way to debug would be to
-`var_dump()` within the resolver, and inspect with WPGraphiQL and your network tab.
+`wp_send_json()` within the resolver, and use GraphiQL to inspect the response.
 
 For example:
 
@@ -89,18 +92,9 @@ add_action( 'graphql_register_types', function() {
     'type' => 'String',
     'description' => __( 'Field registered to demonstrate debugging', 'wp-graphql' ),
     'resolve' => function( $root, $args, $context, $info ) {
-      var_dump( $root );
-      var_dump( $args );
-      var_dump( $context );
-      var_dump( $info );
-      die();
+      // This will send a JSON payload back to GraphiQL
+      wp_send_json( [ $root, $args ]);
     }
   ] );
 } );
 ```
-
-**Here's a GIF showing how to use the Network tab to inspect the `var_dump()` output:**
-
-![Screenshot showing debugging with the Chrome network tab](../../images/wpgraphql-debug-with-network-tab.gif)
-
-_Screenshot showing debugging with the Chrome network tab_

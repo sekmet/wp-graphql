@@ -16,8 +16,6 @@ class MenuItems {
 
 	/**
 	 * Register connections to MenuItems
-	 *
-	 * @access public
 	 */
 	public static function register_connections() {
 
@@ -55,7 +53,6 @@ class MenuItems {
 	/**
 	 * Given an array of $args, returns the args for the connection with the provided args merged
 	 *
-	 * @access public
 	 * @param array $args
 	 *
 	 * @return array
@@ -67,18 +64,23 @@ class MenuItems {
 				'fromFieldName'  => 'menuItems',
 				'toType'         => 'MenuItem',
 				'connectionArgs' => [
-					'id'       => [
+					'id'               => [
 						'type'        => 'Int',
 						'description' => __( 'The ID of the object', 'wp-graphql' ),
 					],
-					'location' => [
+					'parentId'         => [
+						'type'        => 'ID',
+						'description' => __( 'The ID of the parent menu object', 'wp-graphql' ),
+					],
+					'parentDatabaseId' => [
+						'type'        => 'Int',
+						'description' => __( 'The database ID of the parent menu object', 'wp-graphql' ),
+					],
+					'location'         => [
 						'type'        => 'MenuLocationEnum',
 						'description' => __( 'The menu location for the menu being queried', 'wp-graphql' ),
 					],
 				],
-				'resolveNode'    => function( $id, $args, $context, $info ) {
-					return ! empty( $id ) ? DataSource::resolve_menu_item( $id, $context ) : null;
-				},
 				'resolve'        => function ( $source, $args, $context, $info ) {
 					$resolver   = new MenuItemConnectionResolver( $source, $args, $context, $info );
 					$connection = $resolver->get_connection();

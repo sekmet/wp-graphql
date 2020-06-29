@@ -26,7 +26,6 @@ class MenuItem extends Model {
 	 * Stores the incoming post data
 	 *
 	 * @var \WP_Post $data
-	 * @access protected
 	 */
 	protected $data;
 
@@ -35,7 +34,6 @@ class MenuItem extends Model {
 	 *
 	 * @param \WP_Post $post The incoming WP_Post object that needs modeling
 	 *
-	 * @access public
 	 * @return void
 	 * @throws \Exception
 	 */
@@ -47,7 +45,6 @@ class MenuItem extends Model {
 	/**
 	 * Initialize the Post object
 	 *
-	 * @access protected
 	 * @return void
 	 */
 	protected function init() {
@@ -57,6 +54,12 @@ class MenuItem extends Model {
 			$this->fields = [
 				'id'               => function() {
 					return ! empty( $this->data->ID ) ? Relay::toGlobalId( 'nav_menu_item', $this->data->ID ) : null;
+				},
+				'parentId'         => function() {
+					return ! empty( $this->data->menu_item_parent ) ? Relay::toGlobalId( 'nav_menu_item', $this->data->menu_item_parent ) : null;
+				},
+				'parentDatabaseId' => function() {
+					return $this->data->menu_item_parent;
 				},
 				'cssClasses'       => function() {
 					// If all we have is a non-array or an array with one empty
@@ -79,6 +82,9 @@ class MenuItem extends Model {
 				'menuItemId'       => function() {
 					return absint( $this->data->ID );
 				},
+				'databaseId'       => function() {
+					return absint( $this->data->ID );
+				},
 				'objectId'         => function() {
 					return ( absint( $this->data->object_id ) );
 				},
@@ -90,6 +96,9 @@ class MenuItem extends Model {
 				},
 				'url'              => function() {
 					return ! empty( $this->data->url ) ? $this->data->url : null;
+				},
+				'order'            => function() {
+					return $this->data->menu_order;
 				},
 			];
 

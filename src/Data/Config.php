@@ -96,7 +96,7 @@ class Config {
 					* @param string $where The WHERE clause of the query.
 					* @param WP_User_Query $query The WP_User_Query instance (passed by reference).
 					*/
-					$query->query_where = apply_filters_ref_array( 'graphql_users_where', array( $query->query_where, &$query ) );
+					$query->query_where = apply_filters_ref_array( 'graphql_users_where', [ $query->query_where, &$query ] );
 
 					/**
 					 * Filters the ORDER BY clause of the query.
@@ -104,7 +104,7 @@ class Config {
 					 * @param string $orderby The ORDER BY clause of the query.
 					 * @param WP_User_Query $query The WP_User_Query instance (passed by reference).
 					 */
-					$query->query_orderby = apply_filters_ref_array( 'graphql_users_orderby', array( $query->query_orderby, &$query ) );
+					$query->query_orderby = apply_filters_ref_array( 'graphql_users_orderby', [ $query->query_orderby, &$query ] );
 
 				}
 
@@ -268,8 +268,10 @@ class Config {
 				$cursor_term = get_term( $cursor_offset );
 
 				if ( ! empty( $cursor_term ) && ! empty( $cursor_term->name ) ) {
+					// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 					$pieces['where'] .= $wpdb->prepare( " AND t.{$order_by} {$order_compare} %s", $cursor_term->{$order_by} );
 				} else {
+					// phpcs:disable WordPress.DB.PreparedSQLPlaceholders.UnquotedComplexPlaceholder
 					$pieces['where'] .= $wpdb->prepare( ' AND t.term_id %1$s %2$d', $compare, $cursor_offset );
 				}
 			}
@@ -317,8 +319,10 @@ class Config {
 				// Get the $cursor_post
 				$cursor_comment = get_comment( $cursor_offset );
 				if ( ! empty( $cursor_comment ) ) {
+					// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 					$pieces['where'] .= $wpdb->prepare( " AND {$order_by} {$order_compare} %s", $cursor_comment->{$order_by} );
 				} else {
+					// phpcs:disable WordPress.DB.PreparedSQLPlaceholders.UnquotedComplexPlaceholder
 					$pieces['where'] .= $wpdb->prepare( ' AND comment_ID %1$s %2$d', $compare, $cursor_offset );
 				}
 			}

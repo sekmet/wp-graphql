@@ -16,8 +16,6 @@ class Settings {
 	 * Registers a Settings Type with fields for all settings based on settings
 	 * registered using the core register_setting API
 	 *
-	 * @access public
-	 *
 	 * @return void
 	 */
 	public static function register_type() {
@@ -60,7 +58,18 @@ class Settings {
 				} else {
 					$field_key = $key;
 				}
-				$field_key = lcfirst( str_replace( '_', '', ucwords( $setting_field['group'], '_' ) ) . 'Settings' . str_replace( '_', '', ucwords( $field_key, '_' ) ) );
+
+				$group = lcfirst( preg_replace( '[^a-zA-Z0-9 -]', ' ', $setting_field['group'] ) );
+				$group = lcfirst( str_replace( '_', ' ', ucwords( $group, '_' ) ) );
+				$group = lcfirst( str_replace( '-', ' ', ucwords( $group, '_' ) ) );
+				$group = lcfirst( str_replace( ' ', '', ucwords( $group, ' ' ) ) );
+
+				$field_key = lcfirst( preg_replace( '[^a-zA-Z0-9 -]', ' ', $field_key ) );
+				$field_key = lcfirst( str_replace( '_', ' ', ucwords( $field_key, '_' ) ) );
+				$field_key = lcfirst( str_replace( '-', ' ', ucwords( $field_key, '_' ) ) );
+				$field_key = lcfirst( str_replace( ' ', '', ucwords( $field_key, ' ' ) ) );
+
+				$field_key = $group . 'Settings' . ucfirst( $field_key );
 
 				if ( ! empty( $key ) && ! empty( $field_key ) ) {
 
@@ -98,7 +107,7 @@ class Settings {
 									break;
 							}
 
-							return $option;
+							return isset( $option ) ? $option : null;
 						},
 					];
 

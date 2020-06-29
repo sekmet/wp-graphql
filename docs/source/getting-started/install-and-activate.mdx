@@ -7,7 +7,7 @@ import Note from '../../src/components/Note'
 
 <Note type="warning" title="New to WordPress?">
   If you're new to WordPress we recommend getting started by downloading and
-  using <a href="https://localbyflywheel.com/">Local By Flywheel</a>
+  using <a href="https://localwp.com/">Local</a>
 </Note>
 
 ## WPGraphQL WordPress Plugin
@@ -72,7 +72,11 @@ the plugin screen, or via WP CLI `wp plugin activate wp-graphql`
 The most common use of WPGraphQL is as an API endpoint that can be accessed via HTTP requests
 (although it can be used without remote HTTP requests as well)
 
-In order for the `/graphql` endpoint to work, **you must have pretty permalinks enabled** and any permalink structure other than the default WordPress permalink structure.
+In order for the `/graphql` endpoint to work, **you must have pretty permalinks enabled** and any permalink structure other than the default WordPress permalink structure. In addition, if your site url and wordpress address url don't match, the graphql endpoint will be available at the wordpress address url. These settings can be checked at `/wp-admin/options-general.php` For instance:
+
+- **Site Address** - `http://localhost`
+- **Wordpress Address** - `http://localhost/wordpress`
+- **graphql endpoint** - `http://localhost/wordpress/graphql`
 
 Once the plugin is active, your site should have a `example.com/graphql` endpoint and you the
 expected response is a JSON payload like so:
@@ -97,6 +101,7 @@ against a _live_ WPGraphQL API.
 
 There are many GraphQL IDE tools in the wild, such as:
 
+- [Firecamp](https://firecamp.io/graphql) - The fastest GraphQL IDE for the team ever.
 - [GraphiQL](https://github.com/graphql/graphiql) - A React Component that serves as an in-browser IDE for exploring GraphQL.
 - [WPGraphiQL](https://github.com/wp-graphql/wp-graphiql) – GraphQL IDE right in your WordPress dashboard
 - [GraphQL Playground](https://github.com/graphcool/graphql-playground) – GraphQL IDE that supports multi-column schema docs, tabs, query history, configuration of HTTP headers and GraphQL Subscriptions.
@@ -105,6 +110,7 @@ There are many GraphQL IDE tools in the wild, such as:
 - [GraphQL IDE](https://github.com/redound/graphql-ide) – An extensive IDE for exploring GraphQL API’s
 - [Altair GraphQL Client](https://github.com/imolorhe/altair) – A beautiful feature-rich GraphQL Client for all platforms
 - [Insomnia](https://insomnia.rest/) – An full-featured API client with first-party GraphQL query editor
+- [Postman](https://www.postman.com/) - Create and execute any REST, SOAP, and GraphQL queries from the within Postman API client.
 
 <Note type="info">
 Feel free to use any of the tools mentioned, explore and discover others that aren’t mentioned, or even build your own!

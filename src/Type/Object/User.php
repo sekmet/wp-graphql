@@ -5,22 +5,38 @@ namespace WPGraphQL\Type\Object;
 
 use WPGraphQL\Data\DataSource;
 
+/**
+ * Class User
+ *
+ * @package WPGraphQL\Type\Object
+ */
 class User {
+
+	/**
+	 * Registers the User type
+	 */
 	public static function register_type() {
 		register_graphql_object_type(
 			'User',
 			[
 				'description' => __( 'A User object', 'wp-graphql' ),
-				'interfaces'  => [ 'Node' ],
+				'interfaces'  => [ 'Node', 'UniformResourceIdentifiable', 'Commenter' ],
 				'fields'      => [
 					'id'                => [
 						'description' => __( 'The globally unique identifier for the user object.', 'wp-graphql' ),
+					],
+					'databaseId'        => [
+						'type'        => [ 'non_null' => 'Int' ],
+						'description' => __( 'Identifies the primary key from the database.', 'wp-graphql' ),
+						'resolve'     => function( \WPGraphQL\Model\User $user ) {
+							return absint( $user->userId );
+						},
 					],
 					'capabilities'      => [
 						'type'        => [
 							'list_of' => 'String',
 						],
-						'description' => __( 'This field is the id of the user. The id of the user matches WP_User->ID field and the value in the ID column for the "users" table in SQL.', 'wp-graphql' ),
+						'description' => __( 'A list of capabilities (permissions) granted to the user', 'wp-graphql' ),
 					],
 					'capKey'            => [
 						'type'        => 'String',
@@ -28,7 +44,7 @@ class User {
 					],
 					'email'             => [
 						'type'        => 'String',
-						'description' => __( 'Email of the user. This is equivalent to the WP_User->user_email property.', 'wp-graphql' ),
+						'description' => __( 'Email address of the user. This is equivalent to the WP_User->user_email property.', 'wp-graphql' ),
 					],
 					'firstName'         => [
 						'type'        => 'String',
@@ -81,8 +97,9 @@ class User {
 						'description' => __( 'The preferred language locale set for the user. Value derived from get_user_locale().', 'wp-graphql' ),
 					],
 					'userId'            => [
-						'type'        => 'Int',
-						'description' => __( 'The Id of the user. Equivalent to WP_User->ID', 'wp-graphql' ),
+						'type'              => 'Int',
+						'description'       => __( 'The Id of the user. Equivalent to WP_User->ID', 'wp-graphql' ),
+						'deprecationReason' => __( 'Deprecated in favor of databaseId', 'wp-graphql' ),
 					],
 					'isRestricted'      => [
 						'type'        => 'Boolean',

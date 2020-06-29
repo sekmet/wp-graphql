@@ -18,6 +18,7 @@ use WPGraphQL\Data\Connection\UserRoleConnectionResolver;
 use WPGraphQL\Model\Avatar;
 use WPGraphQL\Model\Comment;
 use WPGraphQL\Model\CommentAuthor;
+use WPGraphQL\Model\Menu;
 use WPGraphQL\Model\Plugin;
 use WPGraphQL\Model\Post;
 use WPGraphQL\Model\PostType;
@@ -46,37 +47,25 @@ class DataSource {
 	 *
 	 * @var array $node_definition
 	 * @since  0.0.4
-	 * @access protected
 	 */
 	protected static $node_definition;
 
 	/**
 	 * Retrieves a WP_Comment object for the id that gets passed
 	 *
-	 * @param int        $id      ID of the comment we want to get the object for
-	 * @param AppContext $context The context of the request
+	 * @param int        $id      ID of the comment we want to get the object for.
+	 * @param AppContext $context The context of the request.
 	 *
 	 * @return Deferred object
-	 * @throws UserError
-	 * @since  0.0.5
-	 * @access public
-	 * @throws \Exception
+	 * @since      0.0.5
+	 *
+	 * @throws UserError Throws UserError.
+	 * @throws \Exception Throws UserError.
+	 *
+	 * @deprecated Use the Loader passed in $context instead
 	 */
 	public static function resolve_comment( $id, $context ) {
-
-		if ( empty( $id ) || ! absint( $id ) ) {
-			return null;
-		}
-
-		$comment_id = absint( $id );
-		$context->getLoader( 'comment' )->buffer( [ $comment_id ] );
-
-		return new Deferred(
-			function() use ( $comment_id, $context ) {
-				return $context->getLoader( 'comment' )->load( $comment_id );
-			}
-		);
-
+		return $context->get_loader( 'comment' )->load_deferred( $id );
 	}
 
 	/**
@@ -85,7 +74,7 @@ class DataSource {
 	 * @param int $comment_id The ID of the comment the comment author is associated with.
 	 *
 	 * @return CommentAuthor
-	 * @throws
+	 * @throws \Exception Throws Exception.
 	 */
 	public static function resolve_comment_author( $comment_id ) {
 		global $wpdb;
@@ -99,9 +88,9 @@ class DataSource {
 	 * Wrapper for the CommentsConnectionResolver class
 	 *
 	 * @param mixed  object $source
-	 * @param array         $args    Query args to pass to the connection resolver
-	 * @param AppContext    $context The context of the query to pass along
-	 * @param ResolveInfo   $info    The ResolveInfo object
+	 * @param array       $args    Query args to pass to the connection resolver
+	 * @param AppContext  $context The context of the query to pass along
+	 * @param ResolveInfo $info    The ResolveInfo object
 	 *
 	 * @return mixed
 	 * @since 0.0.5
@@ -123,7 +112,6 @@ class DataSource {
 	 * @return Plugin
 	 * @throws \Exception
 	 * @since  0.0.5
-	 * @access public
 	 */
 	public static function resolve_plugin( $info ) {
 
@@ -177,12 +165,13 @@ class DataSource {
 	 *
 	 * @return array
 	 * @since  0.0.5
-	 * @access public
 	 *
 	 * @throws \Exception
 	 */
 	public static function resolve_plugins_connection( $source, array $args, AppContext $context, ResolveInfo $info ) {
-		return PluginConnectionResolver::resolve( $source, $args, $context, $info );
+		$resolver = new PluginConnectionResolver( $source, $args, $context, $info );
+
+		return $resolver->get_connection();
 	}
 
 	/**
@@ -192,26 +181,15 @@ class DataSource {
 	 * @param AppContext $context The context of the GraphQL Request
 	 *
 	 * @throws UserError
-	 * @since  0.0.5
+	 * @since      0.0.5
 	 * @return Deferred
-	 * @access public
 	 *
 	 * @throws \Exception
+	 *
+	 * @deprecated Use the Loader passed in $context instead
 	 */
 	public static function resolve_post_object( $id, AppContext $context ) {
-
-		if ( empty( $id ) || ! absint( $id ) ) {
-			return null;
-		}
-		$post_id = absint( $id );
-		$context->getLoader( 'post_object' )->buffer( [ $post_id ] );
-
-		return new Deferred(
-			function() use ( $post_id, $context ) {
-				return $context->getLoader( 'post_object' )->load( $post_id );
-			}
-		);
-
+		return $context->get_loader( 'post' )->load_deferred( $id );
 	}
 
 	/**
@@ -220,41 +198,30 @@ class DataSource {
 	 *
 	 * @return Deferred|null
 	 * @throws \Exception
+	 *
+	 * @deprecated Use the Loader passed in $context instead
 	 */
 	public static function resolve_menu_item( $id, AppContext $context ) {
-		if ( empty( $id ) || ! absint( $id ) ) {
-			return null;
-		}
-		$menu_item_id = absint( $id );
-		$context->getLoader( 'menu_item' )->buffer( [ $menu_item_id ] );
-
-		return new Deferred(
-			function() use ( $menu_item_id, $context ) {
-				return $context->getLoader( 'menu_item' )->load( $menu_item_id );
-			}
-		);
+		return $context->get_loader( 'nav_menu_item' )->load_deferred( $id );
 	}
 
 	/**
 	 * Wrapper for PostObjectsConnectionResolver
 	 *
 	 * @param             $source
-	 * @param array       $args      Arguments to pass to the resolve method
-	 * @param AppContext  $context   AppContext object to pass down
-	 * @param ResolveInfo $info      The ResolveInfo object
-	 * @param string      $post_type Post type of the post we are trying to resolve
+	 * @param array       $args    Arguments to pass to the resolve method
+	 * @param AppContext  $context AppContext object to pass down
+	 * @param ResolveInfo $info    The ResolveInfo object
+	 * @param mixed string|array $post_type Post type of the post we are trying to resolve
 	 *
 	 * @return mixed
 	 * @since  0.0.5
-	 * @access public
 	 * @throws \Exception
 	 */
 	public static function resolve_post_objects_connection( $source, array $args, AppContext $context, ResolveInfo $info, $post_type ) {
-		$resolver   = new PostObjectConnectionResolver( $source, $args, $context, $info, $post_type );
-		$connection = $resolver->get_connection();
+		$resolver = new PostObjectConnectionResolver( $source, $args, $context, $info, $post_type );
 
-		return $connection;
-
+		return $resolver->get_connection();
 	}
 
 	/**
@@ -265,7 +232,6 @@ class DataSource {
 	 * @return PostType object
 	 * @throws UserError
 	 * @since  0.0.5
-	 * @access public
 	 * @throws \Exception
 	 */
 	public static function resolve_post_type( $post_type ) {
@@ -294,7 +260,6 @@ class DataSource {
 	 * @return Taxonomy object
 	 * @throws UserError | \Exception
 	 * @since  0.0.5
-	 * @access public
 	 */
 	public static function resolve_taxonomy( $taxonomy ) {
 
@@ -322,24 +287,12 @@ class DataSource {
 	 *
 	 * @return mixed
 	 * @throws \Exception
-	 * @since  0.0.5
-	 * @access public
+	 * @since      0.0.5
+	 *
+	 * @deprecated Use the Loader passed in $context instead
 	 */
 	public static function resolve_term_object( $id, AppContext $context ) {
-
-		if ( empty( $id ) || ! absint( $id ) ) {
-			return null;
-		}
-
-		$term_id = absint( $id );
-		$context->getLoader( 'term_object' )->buffer( [ $id ] );
-
-		return new Deferred(
-			function() use ( $term_id, $context ) {
-				return $context->getLoader( 'term_object' )->load( $term_id );
-			}
-		);
-
+		return $context->get_loader( 'term' )->load_deferred( $id );
 	}
 
 	/**
@@ -353,7 +306,6 @@ class DataSource {
 	 *
 	 * @return array
 	 * @since  0.0.5
-	 * @access public
 	 * @throws \Exception
 	 */
 	public static function resolve_term_objects_connection( $source, array $args, $context, ResolveInfo $info, $taxonomy ) {
@@ -371,7 +323,6 @@ class DataSource {
 	 * @return Theme object
 	 * @throws UserError
 	 * @since  0.0.5
-	 * @access public
 	 *
 	 * @throws \Exception
 	 */
@@ -394,7 +345,6 @@ class DataSource {
 	 *
 	 * @return array
 	 * @since  0.0.5
-	 * @access public
 	 * @throws \Exception
 	 */
 	public static function resolve_themes_connection( $source, array $args, $context, ResolveInfo $info ) {
@@ -408,23 +358,13 @@ class DataSource {
 	 * @param AppContext $context The AppContext
 	 *
 	 * @return Deferred
-	 * @since  0.0.5
-	 * @access public
+	 * @since      0.0.5
 	 * @throws \Exception
+	 *
+	 * @deprecated Use the Loader passed in $context instead
 	 */
 	public static function resolve_user( $id, AppContext $context ) {
-
-		if ( empty( $id ) ) {
-			return null;
-		}
-		$user_id = absint( $id );
-		$context->getLoader( 'user' )->buffer( [ $user_id ] );
-
-		return new Deferred(
-			function() use ( $user_id, $context ) {
-				return $context->getLoader( 'user' )->load( $user_id );
-			}
-		);
+		return $context->get_loader( 'user' )->load_deferred( $id );
 	}
 
 	/**
@@ -437,7 +377,6 @@ class DataSource {
 	 *
 	 * @return array
 	 * @since  0.0.5
-	 * @access public
 	 * @throws \Exception
 	 */
 	public static function resolve_users_connection( $source, array $args, $context, ResolveInfo $info ) {
@@ -455,7 +394,6 @@ class DataSource {
 	 * @return UserRole
 	 * @throws \Exception
 	 * @since  0.0.30
-	 * @access public
 	 */
 	public static function resolve_user_role( $name ) {
 
@@ -464,11 +402,10 @@ class DataSource {
 		if ( null === $role ) {
 			throw new UserError( sprintf( __( 'No user role was found with the name %s', 'wp-graphql' ), $name ) );
 		} else {
-			$role       = (array) $role;
-			$role['id'] = $name;
+			$role                = (array) $role;
+			$role['id']          = $name;
 			$role['displayName'] = $role['name'];
-			$role['name'] = $name;
-
+			$role['name']        = $name;
 
 			return new UserRole( $role );
 		}
@@ -510,28 +447,21 @@ class DataSource {
 	 * @return array
 	 */
 	public static function resolve_user_role_connection( $source, array $args, AppContext $context, ResolveInfo $info ) {
+
 		$resolver = new UserRoleConnectionResolver( $source, $args, $context, $info );
 
 		return $resolver->get_connection();
-
 	}
 
 	/**
 	 * Get all of the allowed settings by group and return the
 	 * settings group that matches the group param
 	 *
-	 * @access public
-	 *
 	 * @param string $group
 	 *
 	 * @return array $settings_groups[ $group ]
 	 */
 	public static function get_setting_group_fields( $group ) {
-
-		/**
-		 * Convert camelCase $group to snake_case to match $settings_groups keys retrieved from WordPress
-		 */
-		$group = strtolower( preg_replace( '/(?<=[a-z])(?=[A-Z])/', '_', $group ) );
 
 		/**
 		 * Get all of the settings, sorted by group
@@ -545,7 +475,6 @@ class DataSource {
 	/**
 	 * Get all of the allowed settings by group
 	 *
-	 * @access public
 	 * @return array $allowed_settings_by_group
 	 */
 	public static function get_allowed_settings_by_group() {
@@ -591,7 +520,6 @@ class DataSource {
 	/**
 	 * Get all of the $allowed_settings
 	 *
-	 * @access public
 	 * @return array $allowed_settings
 	 */
 	public static function get_allowed_settings() {
@@ -644,15 +572,13 @@ class DataSource {
 	 *
 	 * @return array
 	 * @throws UserError
-	 * @access public
 	 */
 	public static function get_node_definition() {
 
 		if ( null === self::$node_definition ) {
 
 			$node_definition = Relay::nodeDefinitions(
-
-				// The ID fetcher definition
+			// The ID fetcher definition
 				function( $global_id, AppContext $context, ResolveInfo $info ) {
 					self::resolve_node( $global_id, $context, $info );
 				},
@@ -676,7 +602,12 @@ class DataSource {
 
 			switch ( true ) {
 				case $node instanceof Post:
-					$type = get_post_type_object( $node->post_type )->graphql_single_name;
+					if ( $node->isRevision ) {
+						$parent_post_type = get_post( $node->parentDatabaseId )->post_type;
+						$type             = get_post_type_object( $parent_post_type )->graphql_single_name;
+					} else {
+						$type = get_post_type_object( $node->post_type )->graphql_single_name;
+					}
 					break;
 				case $node instanceof Term:
 					$type = get_taxonomy( $node->taxonomyName )->graphql_single_name;
@@ -685,7 +616,7 @@ class DataSource {
 					$type = 'Comment';
 					break;
 				case $node instanceof PostType:
-					$type = 'PostType';
+					$type = 'ContentType';
 					break;
 				case $node instanceof Taxonomy:
 					$type = 'Taxonomy';
@@ -701,6 +632,12 @@ class DataSource {
 					break;
 				case $node instanceof CommentAuthor:
 					$type = 'CommentAuthor';
+					break;
+				case $node instanceof Menu:
+					$type = 'Menu';
+					break;
+				case $node instanceof \_WP_Dependency:
+					$type = isset( $node->type ) ? $node->type : null;
 					break;
 				default:
 					$type = null;
@@ -747,6 +684,7 @@ class DataSource {
 	 * @throws \Exception
 	 */
 	public static function resolve_node( $global_id, AppContext $context, ResolveInfo $info ) {
+
 		if ( empty( $global_id ) ) {
 			throw new UserError( __( 'An ID needs to be provided to resolve a node.', 'wp-graphql' ) );
 		}
@@ -770,78 +708,14 @@ class DataSource {
 			 *
 			 * @since 0.0.5
 			 */
-			$allowed_post_types = \WPGraphQL::get_allowed_post_types();
-			$allowed_taxonomies = \WPGraphQL::get_allowed_taxonomies();
 
-			switch ( $id_components['type'] ) {
-				case in_array( $id_components['type'], $allowed_post_types, true ):
-					$node = self::resolve_post_object( $id_components['id'], $context );
-					break;
-				case in_array( $id_components['type'], $allowed_taxonomies, true ):
-					$node = self::resolve_term_object( $id_components['id'], $context );
-					break;
-				case 'comment':
-					$node = self::resolve_comment( $id_components['id'], $context );
-					break;
-				case 'commentAuthor':
-					$node = self::resolve_comment_author( $id_components['id'] );
-					break;
-				case 'plugin':
-					$node = self::resolve_plugin( $id_components['id'] );
-					break;
-				case 'postType':
-					$node = self::resolve_post_type( $id_components['id'] );
-					break;
-				case 'taxonomy':
-					$node = self::resolve_taxonomy( $id_components['id'] );
-					break;
-				case 'theme':
-					$node = self::resolve_theme( $id_components['id'] );
-					break;
-				case 'user':
-					$user_id = absint( $id_components['id'] );
+			$loader = $context->get_loader( $id_components['type'] );
 
-					if ( empty( $user_id ) || ! absint( $user_id ) ) {
-						return null;
-					}
-					$context->getLoader( 'user' )->buffer( [ $user_id ] );
-
-					return new Deferred(
-						function() use ( $user_id, $context ) {
-							return $context->getLoader( 'user' )->load( $user_id );
-						}
-					);
-					break;
-				default:
-					/**
-					 * Add a filter to allow externally registered node types to resolve based on
-					 * the id_components
-					 *
-					 * @param int    $id   The id of the node, from the global ID
-					 * @param string $type The type of node to resolve, from the global ID
-					 *
-					 * @since 0.0.6
-					 */
-					$node = apply_filters( 'graphql_resolve_node', null, $id_components['id'], $id_components['type'], $context );
-					break;
-
+			if ( $loader ) {
+				return $loader->load_deferred( $id_components['id'] );
 			}
 
-			/**
-			 * If the $node is not properly resolved, throw an exception
-			 *
-			 * @since 0.0.6
-			 */
-			if ( ! $node ) {
-				throw new UserError( sprintf( __( 'No node could be found with global ID: %s', 'wp-graphql' ), $global_id ) );
-			}
-
-			/**
-			 * Return the resolved $node
-			 *
-			 * @since 0.0.5
-			 */
-			return $node;
+			return null;
 
 		} else {
 			throw new UserError( sprintf( __( 'The global ID isn\'t recognized ID: %s', 'wp-graphql' ), $global_id ) );
@@ -849,49 +723,23 @@ class DataSource {
 	}
 
 	/**
-	 * Cached version of get_page_by_path so that we're not making unnecessary SQL all the time
-	 *
-	 * This is a modified version of the cached function from WordPress.com VIP MU Plugins here.
+	 * This was used for caching the get_page_by_path function, which is now cached in core,
+	 * please use that function directly instead.
 	 *
 	 * @param string $uri
 	 * @param string $output    Optional. Output type; OBJECT*, ARRAY_N, or ARRAY_A.
 	 * @param string $post_type Optional. Post type; default is 'post'.
 	 *
-	 * @access public
 	 * @return \WP_Post|null WP_Post on success or null on failure
-	 * @see    https://github.com/Automattic/vip-go-mu-plugins/blob/52549ae9a392fc1343b7ac9dba4ebcdca46e7d55/vip-helpers/vip-caching.php#L186
-	 * @link   http://vip.wordpress.com/documentation/uncached-functions/ Uncached Functions
+	 * @deprecated since 0.8.4 Use the get_page_by_path function instead.
 	 */
 	public static function get_post_object_by_uri( $uri, $output = OBJECT, $post_type = 'post' ) {
-
-		if ( is_array( $post_type ) ) {
-			$cache_key = sanitize_key( $uri ) . '_' . md5( serialize( $post_type ) );
-		} else {
-			$cache_key = $post_type . '_' . sanitize_key( $uri );
-		}
-		$post_id = wp_cache_get( $cache_key, 'get_post_object_by_path' );
-
-		if ( false === $post_id ) {
-			$post    = get_page_by_path( $uri, $output, $post_type );
-			$post_id = $post ? $post->ID : 0;
-			if ( 0 === $post_id ) {
-				wp_cache_set( $cache_key, $post_id, 'get_post_object_by_path', ( 1 * HOUR_IN_SECONDS + mt_rand( 0, HOUR_IN_SECONDS ) ) ); // We only store the ID to keep our footprint small
-			} else {
-				wp_cache_set( $cache_key, $post_id, 'get_post_object_by_path', 0 ); // We only store the ID to keep our footprint small
-			}
-		}
-		if ( $post_id ) {
-			return get_post( absint( $post_id ) );
-		}
-
-		return null;
-
+		return get_page_by_path( $uri, $output, $post_type );
 	}
 
 	/**
 	 * Returns array of nav menu location names
 	 *
-	 * @access public
 	 * @return array
 	 */
 	public static function get_registered_nav_menu_locations() {
@@ -899,4 +747,24 @@ class DataSource {
 
 		return ! empty( $_wp_registered_nav_menus ) && is_array( $_wp_registered_nav_menus ) ? array_keys( $_wp_registered_nav_menus ) : [];
 	}
+
+	/**
+	 * This resolves a resource, given a URI (the path / permalink to a resource)
+	 *
+	 * Based largely on the core parse_request function in wp-includes/class-wp.php
+	 *
+	 * @param string      $uri     The URI to fetch a resource from
+	 * @param AppContext  $context The AppContext passed through the GraphQL Resolve Tree
+	 * @param ResolveInfo $info    The ResolveInfo passed through the GraphQL Resolve tree
+	 *
+	 * @return mixed
+	 * @throws \Exception
+	 */
+	public static function resolve_resource_by_uri( $uri, $context, $info ) {
+		$node_resolver = new NodeResolver();
+
+		return $node_resolver->resolve_uri( $uri );
+
+	}
+
 }
